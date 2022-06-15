@@ -1,0 +1,208 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>display</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+    <!-- jQuery library -->
+    @*<script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>*@
+
+    <link href="https://nightly.datatables.net/css/jquery.dataTables.css" rel="stylesheet" type="text/css" />
+
+
+
+</head>
+<body>
+    <h1>datesorting method</h1>
+    <table id="table_id" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>Sr.no.</th>
+                <th>Name</th>
+                <th>Mobile </th>
+                <th>Email address</th>
+                <th>Date of birth</th>
+
+            </tr>
+        </thead>
+    </table>
+
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    @*<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/plug-ins/1.10.20/sorting/datetime-moment.js"></script>*@
+
+    <script type="text/javascript"
+            charset="utf8"
+            src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <script type="text/javascript"
+            charset="utf8"
+            src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+    <script src="https://nightly.datatables.net/js/jquery.dataTables.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/searchbuilder/1.0.1/js/dataTables.searchBuilder.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+    @*<script type="text/javascript" src="//cdn.datatables.net/plug-ins/1.10.24/sorting/datetime-moment.js"></script>*@
+
+
+    <script>
+        $(document).ready(function () {
+
+
+            function myRender(data) {
+                var date1 = data;
+                var customDateDDMMMYYYYToOrd = function (date1) {
+                    "use strict"; //let's avoid tom-foolery in this function
+                    // Convert to a number YYYYMMDD which we can use to order
+                    var dateParts = date1.split(/-/);
+                    return (dateParts[2] * 10000) + ($.inArray(dateParts[1].toUpperCase(), ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]) * 100) + (dateParts[0] * 1);
+                };
+
+                // This will help DataTables magic detect the "dd-MMM-yyyy" format; Unshift
+                // so that it's the first data type (so it takes priority over existing)
+                jQuery.fn.dataTableExt.aTypes.unshift(
+                    function (sData) {
+                        "use strict"; //let's avoid tom-foolery in this function
+                        if (/^([0-2]?\d|3[0-1])-(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)-\d{4}/i.test(sData)) {
+                            return 'date-dd-mmm-yyyy';
+                        }
+                        return null;
+                    }
+                );
+
+                // define the sorts
+                jQuery.fn.dataTableExt.oSort['date-dd-mmm-yyyy-asc'] = function (a, b) {
+                    "use strict"; //let's avoid tom-foolery in this function
+                    var ordA = customDateDDMMMYYYYToOrd(a),
+                        ordB = customDateDDMMMYYYYToOrd(b);
+                    return (ordA < ordB) ? -1 : ((ordA > ordB) ? 1 : 0);
+                };
+
+                jQuery.fn.dataTableExt.oSort['date-dd-mmm-yyyy-desc'] = function (a, b) {
+                    "use strict"; //let's avoid tom-foolery in this function
+                    var ordA = customDateDDMMMYYYYToOrd(a),
+                        ordB = customDateDDMMMYYYYToOrd(b);
+                    return (ordA < ordB) ? 1 : ((ordA > ordB) ? -1 : 0);
+                };
+
+
+                return date1;
+            }
+                $.ajax({
+                    url: '/Home/getList',
+                    method: 'POST',
+                    dataType: 'json',
+                    success: function (data) {
+                        $('#table_id').dataTable({
+                            data: data,
+                            "rowCallback": function (row, data) {
+                                var d = data[4];
+                                var date = new Date(d);
+                                if (date > 1262304000000) {
+                                    $('td.my-class', row).css('color', 'red');
+                                }
+                            },
+                            columns: [
+                                { 'data': 'rid' },
+                                { 'data': 'name' },
+                                { 'data': 'mob' },
+                                { 'data': 'email' },
+                                {
+                                    'data': 'dob',
+                                    
+                                    render: function (data,row)
+                                    {
+
+                                        var d = new Date(data);
+                                        //var color = 'black';
+                                        
+
+                                        var day = d.getDate();
+                                        if (day < 10) {
+                                            day = "0" + day;
+                                        }
+                                        var month = d.getMonth() + 1;
+                                        if (month === 1) {
+                                            month = "JAN";
+                                        }
+                                        else if (month === 2) {
+                                            month = "FEB";
+                                        }
+                                        else if (month === 3) {
+                                            month = "MAR";
+                                        }
+                                        else if (month === 4) {
+                                            month = "APR";
+                                        }
+                                        else if (month === 5) {
+                                            month = "MAY";
+                                        }
+                                        else if (month === 6) {
+                                            month = "JUN";
+                                        }
+                                        else if (month === 7) {
+                                            month = "JUL";
+                                        }
+                                        else if (month === 8) {
+                                            month = "AUG";
+                                        }
+                                        else if (month === 9) {
+                                            month = "SEP";
+                                        }
+                                        else if (month === 10) {
+                                            month = "OCT";
+                                        }
+                                        else if (month === 11) {
+                                            month = "NOV";
+                                        }
+                                        else if (month === 12) {
+                                            month = "DEC";
+                                        }
+                                        else {
+                                            month = "invalid";
+                                        }
+                                        var year = d.getFullYear();
+
+                                        var date1 = day + "-" + month + "-" + year;
+
+                                        
+                                        return myRender(date1);
+                                    },    
+                                }
+                            ],
+                            "rowCallback": function (row, data, index) {
+                                var d = data.dob;
+                                var date = new Date(d);
+
+                                if (date > 1420050600000) {
+                                    $('td:eq(4)', row).css('color', 'Red');
+
+                                }
+                            }
+
+                        });
+
+                    }
+                });
+
+            });
+
+    </script>
+
+
+
+
+
+
+
+</body>
+</html>
